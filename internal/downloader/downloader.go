@@ -7,6 +7,8 @@ import (
 	"time"
 )
 
+const chanBufferSize = 48
+
 type DownloadHandler func(url string, isNew bool, downloadBytes int, elapsedTime time.Duration, err error)
 
 type downloadJob struct {
@@ -22,7 +24,7 @@ type Downloader struct {
 
 func NewDownloader(queueSize int, handler DownloadHandler) *Downloader {
 	return &Downloader{
-		urlsToDownload: make(chan downloadJob, queueSize),
+		urlsToDownload: make(chan downloadJob, chanBufferSize),
 		queueSize:      queueSize,
 		handler:        handler,
 	}

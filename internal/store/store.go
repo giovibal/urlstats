@@ -18,6 +18,14 @@ func New() *DB {
 	}
 }
 
+func (db *DB) ExistsUrl(url string) bool {
+	db.mu.RLock()
+	defer db.mu.RUnlock()
+
+	_, found := db.urlStatsMap[url]
+	return found
+}
+
 func (db *DB) AddUrl(url string) {
 	db.mu.Lock()
 	defer db.mu.Unlock()
@@ -25,20 +33,30 @@ func (db *DB) AddUrl(url string) {
 	u, found := db.urlStatsMap[url]
 	if !found {
 		db.urlStatsMap[url] = &UrlStats{
-			Url:                  url,
-			HitCount:             1,
-			DownloadSuccessCount: 0,
-			DownloadFailureCount: 0,
-			AvgBytes:             0,
-			CreatedAt:            time.Now(),
-			UpdatedAt:            time.Now(),
+			Url:       url,
+			HitCount:  1,
+			CreatedAt: time.Now(),
+			UpdatedAt: time.Now(),
 		}
 		return
 	}
 	// increment the url submission counter
 	u.HitCount = u.HitCount + 1
 	u.UpdatedAt = time.Now()
+}
 
+func (db *DB) IncrementUrlCounter(url string) error {
+	db.mu.Lock()
+	defer db.mu.Unlock()
+
+	u, found := db.urlStatsMap[url]
+	if !found {
+		return fmt.Errorf("error incrementing url counter, url not found: %s", url)
+	}
+	// increment the url submission counter
+	u.HitCount = u.HitCount + 1
+	u.UpdatedAt = time.Now()
+	return nil
 }
 
 func (db *DB) GetUrlList(orderBy []OrderBy, limit int) []UrlStats {

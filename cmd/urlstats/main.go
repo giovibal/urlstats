@@ -142,7 +142,11 @@ func main() {
 		// if updErr != nil {
 		// 	log.Println(err)
 		// }
-		downloaderJob.CheckNewUrl(url)
+		if db.ExistsUrl(url) {
+			db.IncrementUrlCounter(url)
+		} else {
+			downloaderJob.CheckNewUrl(url)
+		}
 
 		w.Write(b)
 	})
