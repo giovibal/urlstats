@@ -15,7 +15,7 @@ The solution must be a single executable, a linux daemon, with an external yaml 
 
 # TODO
 
-- use context to manage gracefull shutdown
+- add context
 - fix calculation of average bytes: add totBytes, and do `avgBytes = totBytes / downloadSuccessCount`
 - aggregate store and downloader in an high level service (facade), and refactor main. Better readability and testing
 
