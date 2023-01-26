@@ -12,8 +12,20 @@ The solution must be a single executable, a linux daemon, with an external yaml 
 - Collect all the downloads times, successfull downloads counter and failed downloads counter and log them all on the stdout when the previous batch process completes.
 - Ideally, the API should be ready to be used by a single page JS application running in another product.
 
+# Build
 
-# TODO
+`make build`
+
+# Run
+
+`make run`
+
+# Test: run simple curls to test behaviour
+
+`make test`
+
+
+# ToDo
 
 - add context in store and downloader, and use a cancel context from main to handle a graceful shutdown.
 - fix calculation of average bytes: add totBytes, and do `avgBytes = totBytes / downloadSuccessCount`
