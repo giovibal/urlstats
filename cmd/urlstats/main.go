@@ -2,6 +2,8 @@ package main
 
 import (
 	"encoding/json"
+	"flag"
+	"fmt"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -12,22 +14,40 @@ import (
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/go-chi/cors"
 
+	"github.com/giovibal/urlstats/internal/config"
 	"github.com/giovibal/urlstats/internal/downloader"
 	"github.com/giovibal/urlstats/internal/store"
 )
 
-const (
-	maxParallelDownloads int = 3  // todo: get from config
-	limit                int = 50 // todo: get from config
-)
+// const (
+//
+//	maxParallelDownloads   int = 3  // todo: get from config
+//	maxUrlsInSearchResults int = 50 // todo: get from config
+//	queueSize              int = 48 // todo: get from config
+//
+// )
+var configFile = "config.yaml"
 
 func main() {
+	// load config
+	flag.StringVar(&configFile, "config", "config.yaml", "config.yaml file path")
+
+	c, err := config.ReadConfig(configFile)
+	if err != nil {
+		// todo: better error message
+		log.Printf("error reading config file %s (%v)", configFile, err)
+		return
+	}
+	maxParallelDownloads := c.MaxParallelDownloads
+	maxUrlsInSearchResults := c.MaxUrlsInSearchResults
+	queueSize := c.QueueSize
+	httpPort := c.HttpPort
 
 	// Init an 'in memory' DB
 	db := store.New()
 
 	// Start downloader job
-	downloaderJob := downloader.NewDownloader(maxParallelDownloads, func(url string, isNew bool, downloadBytes int, elapsedTime time.Duration, err error) {
+	downloaderJob := downloader.NewDownloader(maxParallelDownloads, queueSize, func(url string, isNew bool, downloadBytes int, elapsedTime time.Duration, err error) {
 		downloadSuccess := err == nil
 		if err != nil {
 			log.Printf("error downloading url: %s, %s", url, err)
@@ -105,7 +125,7 @@ func main() {
 		orderByArray := strings.Split(orderByReqParam, ",")
 		orderBy := store.OrderByFromStringArray(orderByArray)
 
-		list := db.GetUrlList(orderBy, limit)
+		list := db.GetUrlList(orderBy, maxUrlsInSearchResults)
 
 		b, err := json.Marshal(list)
 		if err != nil {
@@ -129,19 +149,6 @@ func main() {
 
 		url := req.Url
 
-		// downloadBytes, elapsedTime, err := downloader.DownloadUrl(url)
-		// if err != nil {
-		// 	http.Error(w, err.Error(), 500)
-		// 	return
-		// }
-		// db.AddUrl(url)
-
-		// downloadSuccess := err != nil
-		// avgBytes := downloadBytes
-		// updErr := db.UpdateUrlStats(url, downloadSuccess, avgBytes, elapsedTime)
-		// if updErr != nil {
-		// 	log.Println(err)
-		// }
 		if db.ExistsUrl(url) {
 			db.IncrementUrlCounter(url)
 		} else {
@@ -151,7 +158,7 @@ func main() {
 		w.Write(b)
 	})
 
-	http.ListenAndServe(":3000", r)
+	http.ListenAndServe(fmt.Sprintf(":%d", httpPort), r)
 }
 
 type addUrlRequest struct {

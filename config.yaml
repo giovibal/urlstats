@@ -1,0 +1,4 @@
+maxParallelDownloads: 3
+maxUrlsInSearchResults: 50
+queueSize: 48
+httpPort: 3000
