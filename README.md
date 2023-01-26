@@ -31,5 +31,4 @@ The solution must be a single executable, a linux daemon, with an external yaml 
 - fix calculation of average bytes: add totBytes, and do `avgBytes = totBytes / downloadSuccessCount`
 - aggregate store and downloader in an high level service (facade), and refactor main (better readability)
 - fix handling of parallel submissions of same url: while downloading, successive submission of same url trigger another download
-- add yaml config parser
 - add a suite of tests for store and downloader
