@@ -15,7 +15,7 @@ The solution must be a single executable, a linux daemon, with an external yaml 
 
 # TODO
 
-- add context in store and downloader, and use a cancel context from main to handle a gracefyull shutdown.
+- add context in store and downloader, and use a cancel context from main to handle a graceful shutdown.
 - fix calculation of average bytes: add totBytes, and do `avgBytes = totBytes / downloadSuccessCount`
 - aggregate store and downloader in an high level service (facade), and refactor main. Better readability and testing
 - better handle parallel submissions of same url: while downloading, successive submission of same url trigger another download
